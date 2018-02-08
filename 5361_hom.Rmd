@@ -1,0 +1,676 @@
+---
+title: "5361_stat_hw_Qi_You"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Question 1b
+```{r setup, include=FALSE}
+target <- function(x,sita){
+  n=length(x)
+  value <--n*log(pi)
+  for (i in 1:n){
+    value <- value-log(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+
+
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+derivitive2 <- function(s,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*((1-(sita-x[i])^2)/(1+(sita-x[i])^2)^2)
+  }
+  return(value)
+}
+
+
+estimate <- function(initilal_value){
+  sita <- array()
+  sita[1] <- initilal_value
+  i <- 1
+  difference <- 100
+  while(abs(difference)>10^(-4)&i<100){
+    sita[i+1] <- sita[i]-derivitive1(x,sita[i])/derivitive2(x,sita[i])
+    difference <- target(x,sita[i+1])-target(x,sita[i])
+    i <- i+1
+  }
+  plot(sita,type='l',main=initilal_value,xlab = 'times')
+}
+tempt <- seq(-2,4,by=0.1)
+plot(tempt,target(x,tempt),type = 'l')
+start_points <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8)
+
+for(i in 1:length(start_points)){
+  estimate(start_points[i])
+}
+
+estimate(mean(start_points))
+
+```
+## Equations
+\begin{align}
+l(\theta)\\
+          &= \ln\prod_{i = 1}^n \frac{1}{\pi[1+(x-\theta)^2]}&\\
+          &= \sum_{i=1}^n \ln\frac{1}{\pi[1+(x-\theta)^2]}&\\
+          &= \sum_{i=1}^n [\ln\frac{1}{\pi} + \ln\frac{1}{1+(x-\theta)^2}]&\\
+          &= -n\ln\pi - \sum_{i=1}^n \ln[1+(x-\theta)^2]&\\
+\end{align}
+
+\begin{align}
+l' (\theta)\\
+          &= 0 - \sum_{i=1}^n \frac{2(\theta-x_i)}{1+(\theta-x_i)^2}&\\
+          &= - 2\sum_{i=1}^n \frac{\theta - x_i}{1+(\theta-x_i)}&\\
+\end{align}
+
+\begin{align}
+l''(\theta)\\
+          &= -2\sum_{i=1}^n \frac{1+(\theta-x_i)^2-2(\theta-x_i)(\theta-x_i)}{[1+(\theta-x_i)^2]^2}&\\
+          &= -2\sum_{i=1}^n \frac{1-(\theta-x_i)^2}{[1+(\theta-x_i)^2]^2}&\\
+\end{align}
+
+We can set x to be tant(x). In this way we can compute the value of I easiliy
+\begin{align}
+I(\theta)\\
+          &= n\int\frac{\{p'(x)\}^2}{p(x)}dx\\ 
+          &= n\int\frac{4(x-\theta)^2}{\pi[1+(x-\theta)^2]^4}*\pi[1+(x-\theta)^2]dx&\\
+          &= \frac{4n}{\pi} \int_{-\infty}^\infty \frac{(x-\theta)^2}{[1+(x-\theta)^2]^3}dx&\\
+          &= \frac{4n}{\pi} \int_{-\infty}^\infty \frac{x^2}{(1+x^2)^3}dx&\\
+          &= \frac{4n}{\pi} \int_{-\infty}^\infty [(\frac{1}{(1+x^2)^2}-\frac{1}{(1+x^2)^3})]dx&\\
+          &= \frac{4n}{\pi} (\int_{-\infty}^\infty \frac{1}{(1+x^2)^2}dx-\int_{-\infty}^\infty\frac{1}{(1+x^2)^3}dx)&\\
+          &= \frac{4n}{\pi} [\int_{-\infty}^{\infty}\frac{1}{(1+x^2)^2}dx-(\frac{x}{4(x^2+1)^2}|_{-\infty}^{\infty}+\frac{3}{4}\int_{-\infty}^{\infty}\frac{dx}{(x^2+1)^2})]&\\
+          &= \frac{4n}{\pi}(\int_{-\infty}^{\infty}\frac{1}{4(1+x^2)^2}dx-\frac{x}{4(x^2+1)^2}|_{-\infty}^{\infty})&\\
+          &= \frac{4n}{\pi} [\frac{1}{4}(\frac{x}{2(x^2+1)}|_{-\infty}^{\infty}+\frac{1}{2}\int_{-\infty}^{\infty}\frac{1}{1+x^2}dx)-\frac{x}{4(x^2+1)^2}|_{-\infty}^\infty]&\\
+          &= \frac{4n}{\pi}(\frac{x(x^2-1)}{8(x^2+1)^2}|_{-\infty}^\infty+\frac{1}{8}\int_{-\frac{\pi}{2}}^{\frac{\pi}{2}} \frac{\sec^2t}{1+\tan^2t}dt)&\\
+          &= \frac{4n}{\pi}(0+\frac{\pi}{8})&\\
+          &= \frac{n}{2}&\\
+\end{align}
+
+## Functions I setup
+
+```{r derivitive1&2}
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+derivitive2 <- function(s,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*((1-(sita-x[i])^2)/(1+(sita-x[i])^2)^2)
+  }
+  return(value)
+}
+```
+
+## Plots(1b)
+
+Here are the plots of my result 
+
+```{r ddd, echo=FALSE}
+plot(tempt,target(x,tempt),type = 'l')
+```
+
+Here are the plots of mutiple start points
+```{r multiple}
+for(i in 1:length(start_points)){
+  estimate(start_points[i])
+}
+```
+
+This is the plot of mean
+```{r mean}
+estimate(mean(start_points))
+```
+
+## Question 1(c)
+This time we use fixed points
+```{r kkk, include=FALSE}
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+
+
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+G <- function(alpha,x,sita){
+  value <- alpha*derivitive1(x,sita)+sita
+  return(value)
+}
+
+
+estimate <- function(start_points,alpha){
+  sita <- array()
+  sita[1] <- start_points
+  difference <- 100
+  i <- 1
+  while(abs(difference)>10^(-4)&i<100){
+    sita[i+1] <- G(alpha,x,sita[i])
+    difference <- sita[i+1]-sita[i]
+    i <- i+1
+  }
+  plot(sita,type='l',main=c(start_points,alpha),xlab='times')
+}
+start_points <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8)
+alpha <- c(1, 0.64, 0.25)
+for(i in 1:length(alpha)){
+  for(j in 1:length(start_points)){
+    estimate(start_points[j],alpha[i])
+  }
+}
+```
+
+These are functions I established to compute derivition
+```{r cars}
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+G <- function(alpha,x,sita){
+  value <- alpha*derivitive1(x,sita)+sita
+  return(value)
+}
+
+```
+
+## Here are plots1(c)
+These plots are using different alphas and start points
+
+```{r pressure, echo=FALSE}
+for(i in 1:length(alpha)){
+  for(j in 1:length(start_points)){
+    estimate(start_points[j],alpha[i])
+  }
+}
+```
+
+## Question 1(d)
+This section we use Fisher Scoring to find MLE, with I(theta) being constant of n/2
+```{r setup1, include=FALSE}
+x <- c(1.77, -0.23, 2.76, 3.80, 3.47, 56.75, -1.34, 4.24, -2.44,
+       3.29, 3.71, -2.40, 4.53, -0.07, -1.05, -13.87, -2.53, -1.75)
+
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+I <- length(x)/2
+
+estimate <- function(start_points){
+  sita <- array()
+  sita[1] <- start_points
+  difference <- 100
+  i <- 1
+  while (abs(difference>10^(-4)&i<100)) {
+    sita[i+1] <- sita[i]+derivitive1(x,sita[i])/I
+    difference <- sita[i+1]-sita[i]
+    i <- i+1
+  }
+  plot(sita,type='l',main=start_points,xlab='times')
+}
+start_points <- c(-11, -1, 0, 1.5, 4, 4.7, 7, 8)
+for(i in 1:length(start_points)){
+  estimate(start_points[i])
+}
+```
+
+
+The functions we set up are similar with previous functions, and we compute I
+```{r cars1}
+derivitive1 <- function(x,sita){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-2*(sita-x[i])/(1+(sita-x[i])^2)
+  }
+  return(value)
+}
+
+I <- length(x)/2
+```
+
+## Plots1(d)
+
+These are plots that I use multiple start points
+
+```{r pressure1, echo=FALSE}
+for(i in 1:length(start_points)){
+  estimate(start_points[i])
+}
+```
+
+## Qusetion 2
+```{r setup2, include=FALSE}
+x <- c(3.91, 4.85, 2.28, 4.06, 3.70, 4.04, 5.46, 3.53, 2.28, 1.96,
+     2.53, 3.88, 2.22, 3.47, 4.82, 2.46, 2.99, 2.54, 0.52)
+
+theta <- seq(-pi,pi,by=0.001)
+
+loglikelihood <- function(x,theta){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value+log((1-cos(x[i]-theta))/(2*pi))
+  }
+  return(value)
+}
+
+value <- array()
+for (i in 1:length(theta)){
+  value[i] <- loglikelihood(x,theta[i])
+}
+
+plot(theta,value,type = 'l')
+mm <- mean(x)
+target <- asin(mm-pi)
+
+derivetive1 <- function(x,theta){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value+sin(x[i]-theta)/(1-cos(x[i]-theta))
+  }
+  return(value)
+}
+
+derivetive2 <- function(x,theta){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value-1/(cos(x[i]-theta)-1)
+  }
+  return(value)
+}
+
+
+MLE <- function(theta){
+  diff <- 1
+  i <- 1
+  while(abs(diff)>10^(-4)){
+    theta[i+1] <- theta[i]-derivetive1(x,theta[i])/derivetive2(x,theta[i])
+    diff <- theta[i+1]-theta[i]
+    i <- i+1
+  }
+  return(theta)
+}
+
+theta <- array()
+theta[1] <- target
+s <- MLE(theta)
+theta <- array()
+theta[1] <- -2.7
+ss <- MLE(theta)
+theta <- array()
+theta[1] <- 2.7
+sss <- MLE(theta)
+
+textt <- seq(-pi,pi,length.out=200)
+m <- list()
+for (i in 1:length(textt)){
+  theta <- array()
+  theta[1] <- textt[i]
+  k <- MLE(theta)
+  k <- data.frame(k)
+  m[i] <- k
+}
+
+result <- array()
+for (i in 1:length(m)){
+  l <- m[[i]]
+  result[i] <- l[length(l)]
+}
+
+j <- 1
+num <- list()
+for (i in 1:length(result)){
+  if (abs(result[i]-result[j])>10^(-4)){
+    j <- i
+    num <- append(num,j-1)
+   }
+}
+```
+
+## The likelihood function
+\begin{equation}
+E[X|\theta] = \pi + \sin(\theta)
+\end{equation}
+
+
+## two points
+```{r points}
+target <- asin(mm-pi)
+print(target)
+target1 <- pi-target
+print(target1)
+```
+
+## The sequence of same converge start points
+```{r c2}
+loglikelihood <- function(x,theta){
+  value <- 0
+  for (i in 1:length(x)){
+    value <- value+log((1-cos(x[i]-theta))/(2*pi))
+  }
+  return(value)
+}
+for (i in 1:length(result)){
+  if (abs(result[i]-result[j])>10^(-4)){
+    j <- i
+    num <- append(num,j-1)
+   }
+}
+num <- unique(num)
+print(unique(num[1:length(num)-1]))
+```
+
+## Plots2
+We plot the value of our target
+
+```{r p2, echo=FALSE}
+plot(value,type = 'l',xlab='theta')
+```
+
+we also plot the picture with strat point being 'target'
+```{r theta}
+MLE <- function(theta){
+  diff <- 1
+  i <- 1
+  while(abs(diff)>10^(-4)){
+    theta[i+1] <- theta[i]-derivetive1(x,theta[i])/derivetive2(x,theta[i])
+    diff <- theta[i+1]-theta[i]
+    i <- i+1
+  }
+  plot(theta,type='l')
+  return(theta)
+}
+
+theta <- array()
+theta[1] <- target
+s <- MLE(theta)
+```
+
+## Qustion 3(b)
+```{r setup3, include=FALSE}
+
+
+beetles <- data.frame(
+  days    = c(0,  8,  28,  41,  63,  69,   97, 117,  135,  154),
+  beetles = c(2, 47, 192, 256, 768, 896, 1120, 896, 1184, 1024))
+
+r <- 0.1
+k <- 100
+N0 <- 2
+A_matrix <- function(r,k,times){
+  A <- matrix(nrow=times,ncol=2)
+  for (i in 1:times){
+    A[i,1] <- (N0^2-N0^2*exp(-1*r*beetles$days[i]))/((N0+(k-N0)*exp(-1*r*beetles$days[i]))^2)
+    A[i,2] <- beetles$days[i]*(k-N0)*exp(-1*r*beetles$days[i])*k*N0/((N0+(k-N0)*exp(-1*r*beetles$days[i]))^2)
+  }
+  A
+}
+
+
+Z_matrix <- function(r,k,times){
+  z <- matrix(nrow=times,ncol=1)
+  for (i in 1:times){
+    z[i,1] <- beetles$beetles[i]-k*2/(2+(k-2)*exp(-r*beetles$days[i]))
+  }
+  z
+}
+
+theta <- list()
+sss <- t(cbind(k,r))
+theta[1] <- data.frame(sss)
+temt <- theta[[1]]
+
+
+error <- function(theta,i){
+  n1 <- theta[[i+1]]
+  n2 <- theta[[i]]
+  error <- abs(n1[1]-n2[1])+abs(n1[2]-n2[2])
+}
+i <- 1
+error1 <- 100
+while(error1>10^(-4)){
+  temt <- theta[[i]]
+  s <- A_matrix(temt[2],temt[1],10)
+  m <- Z_matrix(temt[2],temt[1],10)
+  argue <- solve(t(s)%*%s)%*%t(s)%*%m
+  theta[[i+1]] <- theta[[i]]+argue
+  error1 <- error(theta,i)
+  i <- i+1
+}
+
+NT <- function(r,k,i){
+  value <- k*2/(2+(k-2)*exp(-r*beetles$days[i]))
+}
+
+errors <- function(r,k,times){
+  zz <- Z_matrix(r,k,times)
+  value <- 0
+  for (i in 1:length(zz)){
+    value <- zz[i]^2+value
+  }
+  return(value)
+}
+
+kk <- array()
+for(i in 1:length(theta)){
+  parameter <- theta[[i]]
+  kk [i]<- errors(parameter[2],parameter[1],10)
+}
+plot(kk,type='l')
+```
+
+## Functions
+
+Here are matrix we need to establish to build our function
+```{r c3}
+A_matrix <- function(r,k,times){
+  A <- matrix(nrow=times,ncol=2)
+  for (i in 1:times){
+    A[i,1] <- (N0^2-N0^2*exp(-1*r*beetles$days[i]))/((N0+(k-N0)*exp(-1*r*beetles$days[i]))^2)
+    A[i,2] <- beetles$days[i]*(k-N0)*exp(-1*r*beetles$days[i])*k*N0/((N0+(k-N0)*exp(-1*r*beetles$days[i]))^2)
+  }
+  A
+}
+
+
+Z_matrix <- function(r,k,times){
+  z <- matrix(nrow=times,ncol=1)
+  for (i in 1:times){
+    z[i,1] <- beetles$beetles[i]-k*2/(2+(k-2)*exp(-r*beetles$days[i]))
+  }
+  z
+}
+```
+
+## Sum of squared errors
+
+
+```{r p3, echo=FALSE}
+plot(kk,type='l',xlab='times')
+```
+
+## Question 3(c)
+This time we need to optimize the value of r, K, sigma
+```{r setup4, include=FALSE}
+
+
+beetles <- data.frame(
+  days    = c(0,  8,  28,  41,  63,  69,   97, 117,  135,  154),
+  beetles = c(2, 47, 192, 256, 768, 896, 1120, 896, 1184, 1024))
+
+times <- beetles$days
+n <- beetles$beetles
+u <- expression(-log((2*pi*sigma)^0.5)-((log(N)-log(k*2/(2+(k-2)*exp(-r*t))))^2)/(2*(sigma^2)))
+
+d_sigma <- as.expression(D(u,'sigma'))
+dd_sigma <- as.expression(D(d_sigma,'sigma'))
+
+d_k <-as.expression(D(u,'k'))
+dd_k <- as.expression(D(d_k,'k'))
+
+d_r <- as.expression(D(u,'r'))
+dd_r <- as.expression(D(d_r,'r'))
+
+theta <- list()
+theta[1]<- data.frame(c(1,1000,0.1))
+
+m <- theta[[1]]
+value <- 0
+value1 <- 0
+value2 <- 0
+for(i in 1:length(times)){
+  t=times[i]
+  N=n[i]
+  sigma=1
+  k=1000
+  r=0.1
+  value <- value+eval(dd_sigma)
+  value1 <- value1+eval(dd_k)
+  value2 <- value2+eval(dd_r)
+
+}
+
+#m <- theta[[1]]
+times <- beetles$days
+
+get_d_sigma <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(d_sigma,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+  }
+  return(kk)
+}
+
+get_dd_sigma <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(dd_sigma,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+    #kk[2] <- kk[2]+eval(dd_sigma,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+    #result <- kk[1]/kk[2]
+  }
+  return(kk)
+}
+
+get_d_k <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(d_k,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+  }
+  return(kk)
+}
+
+get_dd_k <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(dd_k,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+    #kk[2] <- kk[2]+eval(dd_sigma,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+    #result <- kk[1]/kk[2]
+  }
+  return(kk)
+}
+
+get_d_r <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(d_r,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+  }
+  return(kk)
+}
+
+get_dd_r <- function(m){
+  kk <- 0
+  for(i in 1:length(beetles$days)){
+    kk <- kk+eval(dd_r,envir=list(sigma=m[1],k=m[2],r=m[3],t=times[i],N=n[i]))
+  }
+  return(kk)
+}
+
+result <- get_dd_k(m)
+error <- function(theta,i){
+  n1 <- theta[[i+1]]
+  n2 <- theta[[i]]
+  error <- sum(abs(n1 - n2))
+  return(error)
+}
+
+difference <- 100
+i <- 1
+kF <- m[2]
+rF <- m[3]
+sigmaF <- m[1]
+while(difference>0.000001&i<1000){
+  m <- theta[[i]]
+  kF <- kF-(get_d_k(m)/get_dd_k(m))
+  rF <- rF-(get_d_r(m)/get_dd_r(m))
+  sigmaF <- sigmaF-(get_d_sigma(m)/get_dd_sigma(m))
+  theta[i+1] <- data.frame(c(sigmaF,kF,rF))
+  updatek <- abs((get_d_k(m)/get_dd_k(m)))
+  updater <- abs((get_d_r(m)/get_dd_r(m)))
+  updatesigma <- abs((get_d_sigma(m)/get_dd_sigma(m)))
+  #difference <- error(theta,i)
+  difference <- updatek + updater + updatesigma
+  i <- i+1
+  
+}
+print(i)
+print(kF)
+print(rF)
+print(sigmaF)
+
+```
+
+## Partial Derivative
+```{r partial}
+d_sigma <- as.expression(D(u,'sigma'))
+dd_sigma <- as.expression(D(d_sigma,'sigma'))
+
+d_k <-as.expression(D(u,'k'))
+dd_k <- as.expression(D(d_k,'k'))
+
+d_r <- as.expression(D(u,'r'))
+dd_r <- as.expression(D(d_r,'r'))
+```
+
+## 3c
+
+I use Newton method to optimize the r,K, and square of sigma.
+These numbers are
+
+Times we use 
+```{r p4, echo=FALSE}
+print(i)
+```
+The results
+```{r results}
+print(kF)
+print(rF)
+print(sigmaF)
+```
+
+
